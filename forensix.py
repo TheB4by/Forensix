@@ -6,9 +6,7 @@ import sqlite3
 import psutil
 import winreg
 import sys
-
-
-
+from datetime import datetime 
 
 # === Funções Lógicas ===
 def log(message):
@@ -25,14 +23,22 @@ def collect_running_processes():
 def collect_installed_applications():
     log("\n[+] Installed Applications:")
     try:
-        reg_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path) as key:
-            for i in range(0, winreg.QueryInfoKey(key)[0]):
-                try:
-                    app_name, _ = winreg.EnumValue(key, i)
-                    log(f"Application: {app_name}")
-                except:
-                    continue
+        reg_paths = [
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        ]
+        for reg_path in reg_paths:
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path) as key:
+                for i in range(0, winreg.QueryInfoKey(key)[0]):
+                    try:
+                        subkey_name = winreg.EnumKey(key, i)
+                        with winreg.OpenKey(key, subkey_name) as subkey:
+                            app_name = winreg.QueryValueEx(subkey, "DisplayName")[0]
+                            log(f"Application: {app_name}")
+                    except FileNotFoundError:
+                        continue
+                    except Exception as e:
+                        log(f"[!] Error reading application: {e}")
     except Exception as e:
         log(f"[!] Error collecting installed applications: {e}")
 
@@ -57,6 +63,26 @@ def collect_browser_history():
         conn.close()
     except Exception as e:
         log(f"[!] Error reading browser history: {e}")
+
+def save_results_as_rtf():
+    try:
+        now = datetime.now()
+        date_time = now.strftime("%Y-%m-%d %H:%M:%S")
+        user = os.getlogin()
+        rtf_file = filedialog.asksaveasfilename(defaultextension=".rtf", filetypes=[("RTF files", "*.rtf")])
+        if not rtf_file:
+            return
+        with open(rtf_file, "w", encoding="utf-8") as f:
+            f.write("{\\rtf1\\ansi\\deff0\n")
+            f.write(f"\\b Forensix Report - {date_time} - User: {user} \\b0\n")
+            f.write("\\par\n")
+            with open(report_file, "r", encoding="utf-8") as report:
+                for line in report:
+                    f.write(line.replace("\n", "\\par\n"))
+            f.write("}")
+        messagebox.showinfo("Sucesso", "Resultados salvos como RTF!")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao salvar o arquivo RTF: {e}")
 
 # === Setup Inicial ===
 results_dir = os.path.join(os.environ["USERPROFILE"], "Desktop", "Forensix", "RESULTS")
@@ -86,10 +112,11 @@ tk.Button(button_frame, text="Coletar Processos", command=collect_running_proces
 tk.Button(button_frame, text="Aplicativos Instalados", command=collect_installed_applications, width=20).grid(row=0, column=1, padx=5, pady=5)
 tk.Button(button_frame, text="Conexões de Rede", command=collect_network_connections, width=20).grid(row=1, column=0, padx=5, pady=5)
 tk.Button(button_frame, text="Histórico do Navegador", command=collect_browser_history, width=20).grid(row=1, column=1, padx=5, pady=5)
+tk.Button(button_frame, text="Salvar como RTF", command=save_results_as_rtf, width=20).grid(row=2, column=0, columnspan=2, pady=5)
 
 output_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, height=15, bg="#282a36", fg="#f8f8f2", insertbackground="white")
 output_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-log("Forensix - A Digital Forensics Tool\nMade by BABY\nVersion 1.0\n------------------------------------")
+log("Forensix - A Digital Forensics Tool\nMade by BABY\nVersion Sublevandis (1.2.0)\n------------------------------------")
 
 root.mainloop()
