@@ -9,6 +9,7 @@
 - Display active network connections (IPv4/IPv6)  
 - Extract browser history from a selected SQLite file (e.g., Chrome)  
 - Export all collected data as an `.rtf` document with formatting
+- Customize your ui with the new customization system
 
 ## 📂 Report Location
 
@@ -35,6 +36,11 @@ C:\Users\<YourUser>\AppData\Local\Google\Chrome\User Data\Default\History
 
 ```bash
 pip install psutil
+pip install sqlite3
+pip install platform
+pip install tkinter
+pip install os
+pip install datetime
 ```
 
 ## 🚀 How to Run (Terminal)
@@ -43,7 +49,7 @@ pip install psutil
 2. Run the script using:
 
 ```bash
-python forensix.py
+python3 forensix.py
 ```
 
 ## 🚀 How to Run (Windows)
@@ -65,11 +71,11 @@ Sorry Linux users, Forensix does not yet support Linux in this version😔.
 ---
 
 **Developer:** BABY  
-**Version:** Sublevandis (1.2.0)  
+**Version:** Imperium (1.3.0)  
 
 ```
 Forensix - A Digital Forensics Tool
 Made by BABY
-Version Sublevandis (1.2.0)
+Version Imperium (1.3.0)
 ------------------------------------
 ```
