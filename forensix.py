@@ -1,11 +1,9 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext
+from tkinter import filedialog, messagebox, scrolledtext, colorchooser, ttk
 import os
-import base64
 import sqlite3
 import psutil
 import winreg
-import sys
 from datetime import datetime 
 
 # === Funções Lógicas ===
@@ -95,9 +93,16 @@ root.title("Forensix - Digital Forensics Tool")
 root.geometry("700x500")
 root.configure(bg="#1e1e2e")
 
-tk.Label(root, text="Forensix - GUI", font=("Arial", 16, "bold"), fg="#cba6f7", bg="#1e1e2e").pack(pady=10)
+notebook = ttk.Notebook(root)
+notebook.pack(fill=tk.BOTH, expand=True)
 
-browser_frame = tk.Frame(root, bg="#1e1e2e")
+# Aba principal
+main_frame = tk.Frame(notebook, bg="#1e1e2e")
+notebook.add(main_frame, text="Principal")
+
+tk.Label(main_frame, text="Forensix - GUI", font=("Arial", 16, "bold"), fg="#cba6f7", bg="#1e1e2e").pack(pady=10)
+
+browser_frame = tk.Frame(main_frame, bg="#1e1e2e")
 browser_frame.pack(pady=5)
 
 tk.Label(browser_frame, text="Path to Browser History:", fg="white", bg="#1e1e2e").pack(side=tk.LEFT)
@@ -105,7 +110,7 @@ browser_entry = tk.Entry(browser_frame, width=60)
 browser_entry.pack(side=tk.LEFT, padx=5)
 tk.Button(browser_frame, text="📁", command=lambda: browser_entry.insert(0, filedialog.askopenfilename())).pack()
 
-button_frame = tk.Frame(root, bg="#1e1e2e")
+button_frame = tk.Frame(main_frame, bg="#1e1e2e")
 button_frame.pack(pady=10)
 
 tk.Button(button_frame, text="Coletar Processos", command=collect_running_processes, width=20).grid(row=0, column=0, padx=5, pady=5)
@@ -114,9 +119,35 @@ tk.Button(button_frame, text="Conexões de Rede", command=collect_network_connec
 tk.Button(button_frame, text="Histórico do Navegador", command=collect_browser_history, width=20).grid(row=1, column=1, padx=5, pady=5)
 tk.Button(button_frame, text="Salvar como RTF", command=save_results_as_rtf, width=20).grid(row=2, column=0, columnspan=2, pady=5)
 
-output_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, height=15, bg="#282a36", fg="#f8f8f2", insertbackground="white")
+output_text = scrolledtext.ScrolledText(main_frame, wrap=tk.WORD, height=15, bg="#282a36", fg="#f8f8f2", insertbackground="white")
 output_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-log("Forensix - A Digital Forensics Tool\nMade by BABY\nVersion Sublevandis (1.2.0)\n------------------------------------")
+# Aba de customização de cores
+def choose_bg_color():
+    color = colorchooser.askcolor()[1]
+    if color:
+        main_frame.configure(bg=color)
+        browser_frame.configure(bg=color)
+        button_frame.configure(bg=color)
+        output_text.configure(bg=color)
+        for widget in main_frame.winfo_children():
+            if isinstance(widget, tk.Label):
+                widget.configure(bg=color)
+            if isinstance(widget, tk.Frame):
+                widget.configure(bg=color)
+
+def choose_text_color():
+    color = colorchooser.askcolor()[1]
+    if color:
+        output_text.configure(fg=color)
+
+custom_frame = tk.Frame(notebook, bg="#1e1e2e")
+notebook.add(custom_frame, text="Cores")
+
+tk.Label(custom_frame, text="Personalizar Cores", font=("Arial", 14, "bold"), fg="#cba6f7", bg="#1e1e2e").pack(pady=10)
+tk.Button(custom_frame, text="Cor do Fundo", command=choose_bg_color, width=20).pack(pady=5)
+tk.Button(custom_frame, text="Cor do Texto", command=choose_text_color, width=20).pack(pady=5)
+
+log("Forensix - A Digital Forensics Tool\nMade by BABY\nVersion  (1.3.0)\n------------------------------------")
 
 root.mainloop()
